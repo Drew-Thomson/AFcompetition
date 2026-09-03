@@ -1,0 +1,14 @@
+Specification for this project
+
+I want to build an automated pipeline to enact the key processes in our paper
+
+AlphaFold Ensemble Competition Screens Enable Peptide Binder Design with Single-Residue Sensitivity
+https://doi.org/10.1021/acschembio.4c00418
+
+This might be best accessed via a jupyter notebook.
+
+Overall the code should build alphafold models of a target protein and two potential ligands to see which of the ligands occupies the binding site, and is therefore predicted to be the stronger binder. The binding site should be user specified. Analysis of the outputs could be done with biopython's pdb module, measuring the distances between atoms in the ligands and the binding site to determine which one has gone where. Importantly, this method works by building many models with alphafold (our original work uses colabfold local batch), and taking the statistical average of which binder is in the binding site, and which has been displaced to elsewhere on the target protein.
+
+I want to eventually build this into a workflow to compare a whole list of potential binders (e.g. hits from bindcraft, or sequences from a blast search) to identify the strongest one. In the first instance a simple pairwise comparison is enough.
+
+This could be something that is run on google colab.
