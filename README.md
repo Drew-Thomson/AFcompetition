@@ -20,10 +20,13 @@ Automated pipeline for the methodology described in:
 
 ## Usage
 
-Execution is managed via the `AF_Competition_Screen.ipynb` Jupyter Notebook.
+Execution is managed via two Jupyter Notebooks depending on your needs:
+
+1. **`AF_Competition_Screen.ipynb`**: For a direct, single pairwise competition between two ligands.
+2. **`AF_Competition_Tournament.ipynb`**: For screening a list of candidates in a "Winner Stays On" (King of the Hill) tournament to find the strongest binder.
 
 User-configurable parameters include:
-* `TARGET_SEQ`, `LIGAND_1_SEQ`, `LIGAND_2_SEQ`: Amino acid sequences.
+* `TARGET_SEQ`, `LIGAND_1_SEQ`, `LIGAND_2_SEQ` (or `BINDER_CANDIDATES` list): Amino acid sequences.
 * `BINDING_SITE_RESIDUES`: Target chain residue indices defining the binding site (1-indexed).
 * `NUM_SEEDS`: Number of structural models to generate.
 * `RUN_NAME`: Subdirectory name for output isolation.
