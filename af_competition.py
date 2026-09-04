@@ -6,32 +6,17 @@ import numpy as np
 from Bio.PDB import PDBParser
 
 
-def run_colabfold(
+def _setup_colabfold_run(
     target_seq: str,
     lig1_seq: str,
     lig2_seq: str,
     base_output_dir: str,
-    run_name: str = "competition",
-    num_seeds: int = 20,
-) -> str:
-    """
-    Executes colabfold_batch for the provided target and ligand sequences.
-
-    Args:
-        target_seq: Amino acid sequence of the target protein.
-        lig1_seq: Amino acid sequence of ligand 1.
-        lig2_seq: Amino acid sequence of ligand 2.
-        base_output_dir: Base directory to save colabfold output.
-        run_name: Name of the specific run, used for the subfolder.
-        num_seeds: Number of models to generate in the ensemble.
-
-    Returns:
-        The path to the generated output directory.
-    """
+    run_name: str,
+    num_seeds: int,
+):
     actual_output_dir = os.path.join(base_output_dir, run_name)
     counter = 1
     while os.path.exists(actual_output_dir) and os.listdir(actual_output_dir):
-        # Only increment if the directory exists AND is not empty
         actual_output_dir = os.path.join(base_output_dir, f"{run_name}_{counter}")
         counter += 1
 
@@ -39,12 +24,10 @@ def run_colabfold(
     fasta_path = os.path.join(actual_output_dir, "input.fasta")
 
     complex_seq = f"{target_seq}:{lig1_seq}:{lig2_seq}"
-
     with open(fasta_path, "w") as f:
         f.write(f">complex\n{complex_seq}\n")
 
     random_seed = random.randint(1, 999999)
-
     cmd = [
         "colabfold_batch",
         fasta_path,
@@ -59,21 +42,45 @@ def run_colabfold(
         "--num-recycle",
         "20",
     ]
-
-    # Convert to a single string and run with shell=True to ensure any local shell aliases/paths are respected
     cmd_str = " ".join(cmd)
-
-    # Sanitize environment variables to prevent Jupyter's MPLBACKEND from breaking colabfold_batch
     env = os.environ.copy()
     env.pop("MPLBACKEND", None)
 
+    return cmd_str, actual_output_dir, env
+
+
+def run_colabfold(
+    target_seq: str,
+    lig1_seq: str,
+    lig2_seq: str,
+    base_output_dir: str,
+    run_name: str = "competition",
+    num_seeds: int = 20,
+) -> str:
+    cmd_str, actual_output_dir, env = _setup_colabfold_run(
+        target_seq, lig1_seq, lig2_seq, base_output_dir, run_name, num_seeds
+    )
     try:
         subprocess.run(cmd_str, shell=True, check=True, env=env)
     except subprocess.CalledProcessError:
         print(f"ColabFold execution failed. Command run was:\n{cmd_str}")
         raise
-
     return actual_output_dir
+
+
+def run_colabfold_async(
+    target_seq: str,
+    lig1_seq: str,
+    lig2_seq: str,
+    base_output_dir: str,
+    run_name: str = "competition",
+    num_seeds: int = 20,
+):
+    cmd_str, actual_output_dir, env = _setup_colabfold_run(
+        target_seq, lig1_seq, lig2_seq, base_output_dir, run_name, num_seeds
+    )
+    process = subprocess.Popen(cmd_str, shell=True, env=env)
+    return process, actual_output_dir
 
 
 def calculate_ca_distance(
