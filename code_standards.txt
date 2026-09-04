@@ -4,6 +4,6 @@ Python code should be linted using ruff
 Tests should be implemented with pytest
 Standard MIT open source licence should be applied
 Numpy should be imported as 'np'. matplotlib.pyplot as 'plt'
-I tend to overuse the word 'test' in naming of variables during development (e.g. 'testmatrix' etc). These instances should be renamed to a sensible alternative.
+Avoid the word 'test' in naming of variables during development (e.g. 'testmatrix' etc).
 Style for documentation should be succinct and factual, not gushing or florid- think dour Scots rather than effusive American
 
