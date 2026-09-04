@@ -60,11 +60,22 @@ def run_colabfold(
     cmd_str, actual_output_dir, env = _setup_colabfold_run(
         target_seq, lig1_seq, lig2_seq, base_output_dir, run_name, num_seeds
     )
-    try:
-        subprocess.run(cmd_str, shell=True, check=True, env=env)
-    except subprocess.CalledProcessError:
-        print(f"ColabFold execution failed. Command run was:\n{cmd_str}")
-        raise
+
+    log_path = os.path.join(actual_output_dir, "colabfold.log")
+    with open(log_path, "w") as log_file:
+        try:
+            subprocess.run(
+                cmd_str,
+                shell=True,
+                check=True,
+                env=env,
+                stdout=log_file,
+                stderr=subprocess.STDOUT,
+            )
+        except subprocess.CalledProcessError:
+            print(f"ColabFold execution failed. Command run was:\n{cmd_str}")
+            print(f"Check {log_path} for detailed error output.")
+            raise
     return actual_output_dir
 
 
@@ -79,8 +90,13 @@ def run_colabfold_async(
     cmd_str, actual_output_dir, env = _setup_colabfold_run(
         target_seq, lig1_seq, lig2_seq, base_output_dir, run_name, num_seeds
     )
-    process = subprocess.Popen(cmd_str, shell=True, env=env)
-    return process, actual_output_dir
+
+    log_path = os.path.join(actual_output_dir, "colabfold.log")
+    log_file = open(log_path, "w")
+    process = subprocess.Popen(
+        cmd_str, shell=True, env=env, stdout=log_file, stderr=subprocess.STDOUT
+    )
+    return process, actual_output_dir, log_file
 
 
 def calculate_ca_distance(
