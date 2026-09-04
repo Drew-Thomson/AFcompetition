@@ -1,0 +1,7 @@
+biopython
+numpy
+matplotlib
+pytest
+ruff
+jupyter
+py3Dmol
