@@ -1,6 +1,8 @@
 # AFcompetition
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.11+-blue.svg)
+![pytest](https://img.shields.io/badge/pytest-passing-success.svg)
 ![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
 
 AlphaFold Ensemble Competition Screen.
