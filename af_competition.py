@@ -99,11 +99,13 @@ def run_colabfold_async(
     return process, actual_output_dir, log_file
 
 
-def calculate_ca_distance(
-    structure, target_residues: list[int], chain_id_ligand: str
+def calculate_interface_distance(
+    structure, target_residues: list[int], chain_id_ligand: str, top_n: int = 5
 ) -> float:
     """
-    Calculates the minimum CA-CA distance between specified target residues (Chain A) and a ligand chain.
+    Calculates the average distance of the top N closest heavy-atom pairs
+    between specified target residues' side chains (Chain A) and a ligand chain.
+    Falls back to CA for Glycine or residues without side chain heavy atoms.
     """
     try:
         model = structure[0]
@@ -112,39 +114,59 @@ def calculate_ca_distance(
     except KeyError:
         return float("inf")
 
-    target_ca_atoms = []
+    target_atoms = []
+    backbone_atoms = {"N", "CA", "C", "O", "OXT"}
+
     for res_id in target_residues:
         if res_id in chain_a:
             residue = chain_a[res_id]
-            if "CA" in residue:
-                target_ca_atoms.append(residue["CA"].get_coord())
+            res_sidechain_atoms = []
+            for atom in residue:
+                # Exclude hydrogens and backbone atoms to get side-chain heavy atoms
+                if atom.element != "H" and atom.get_name() not in backbone_atoms:
+                    res_sidechain_atoms.append(atom.get_coord())
 
-    if not target_ca_atoms:
+            if not res_sidechain_atoms:
+                # Fallback to CA if no side chain heavy atoms exist (e.g., Glycine)
+                if "CA" in residue:
+                    res_sidechain_atoms.append(residue["CA"].get_coord())
+
+            target_atoms.extend(res_sidechain_atoms)
+
+    if not target_atoms:
         return float("inf")
 
-    lig_ca_atoms = []
+    lig_atoms = []
     for residue in chain_lig:
-        if "CA" in residue:
-            lig_ca_atoms.append(residue["CA"].get_coord())
+        for atom in residue:
+            if atom.element != "H":
+                lig_atoms.append(atom.get_coord())
 
-    if not lig_ca_atoms:
+    if not lig_atoms:
         return float("inf")
 
-    target_coords = np.array(target_ca_atoms)
-    lig_coords = np.array(lig_ca_atoms)
+    target_coords = np.array(target_atoms)
+    lig_coords = np.array(lig_atoms)
 
-    # Calculate pairwise distances and return the minimum
+    # Calculate pairwise distances
     # shape of target_coords is (N, 3), lig_coords is (M, 3)
     diff = target_coords[:, np.newaxis, :] - lig_coords[np.newaxis, :, :]
     distances = np.linalg.norm(diff, axis=2)
-    return float(np.min(distances))
+
+    # Flatten and sort the distances
+    flat_distances = distances.flatten()
+    flat_distances.sort()
+
+    # Take the average of the top_n shortest distances
+    n_to_take = min(top_n, len(flat_distances))
+    return float(np.mean(flat_distances[:n_to_take]))
 
 
 def analyze_binding(
     pdb_path: str, target_residues: list[int], distance_threshold: float = 10.0
 ) -> dict:
     """
-    Parses a PDB file and determines which ligands are bound based on CA-CA distance.
+    Parses a PDB file and determines which ligands are bound based on interface heavy-atom distance.
     """
     parser = PDBParser(QUIET=True)
     structure = parser.get_structure("complex", pdb_path)
@@ -152,8 +174,8 @@ def analyze_binding(
     b_factors = [atom.get_bfactor() for atom in structure.get_atoms()]
     mean_plddt = float(np.mean(b_factors)) if b_factors else 0.0
 
-    dist_lig1 = calculate_ca_distance(structure, target_residues, "B")
-    dist_lig2 = calculate_ca_distance(structure, target_residues, "C")
+    dist_lig1 = calculate_interface_distance(structure, target_residues, "B")
+    dist_lig2 = calculate_interface_distance(structure, target_residues, "C")
 
     return {
         "pdb_file": os.path.basename(pdb_path),
