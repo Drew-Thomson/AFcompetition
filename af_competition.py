@@ -3,6 +3,7 @@ import subprocess
 import random
 from pathlib import Path
 import numpy as np
+from scipy.spatial.distance import cdist
 from Bio.PDB import PDBParser
 
 
@@ -42,11 +43,10 @@ def _setup_colabfold_run(
         "--num-recycle",
         "20",
     ]
-    cmd_str = " ".join(cmd)
     env = os.environ.copy()
     env.pop("MPLBACKEND", None)
 
-    return cmd_str, actual_output_dir, env
+    return cmd, actual_output_dir, env
 
 
 def run_colabfold(
@@ -57,7 +57,7 @@ def run_colabfold(
     run_name: str = "competition",
     num_seeds: int = 20,
 ) -> str:
-    cmd_str, actual_output_dir, env = _setup_colabfold_run(
+    cmd, actual_output_dir, env = _setup_colabfold_run(
         target_seq, lig1_seq, lig2_seq, base_output_dir, run_name, num_seeds
     )
 
@@ -65,15 +65,15 @@ def run_colabfold(
     with open(log_path, "w") as log_file:
         try:
             subprocess.run(
-                cmd_str,
-                shell=True,
+                cmd,
+                shell=False,
                 check=True,
                 env=env,
                 stdout=log_file,
                 stderr=subprocess.STDOUT,
             )
         except subprocess.CalledProcessError:
-            print(f"ColabFold execution failed. Command run was:\n{cmd_str}")
+            print(f"ColabFold execution failed. Command run was:\n{' '.join(cmd)}")
             print(f"Check {log_path} for detailed error output.")
             raise
     return actual_output_dir
@@ -87,14 +87,14 @@ def run_colabfold_async(
     run_name: str = "competition",
     num_seeds: int = 20,
 ):
-    cmd_str, actual_output_dir, env = _setup_colabfold_run(
+    cmd, actual_output_dir, env = _setup_colabfold_run(
         target_seq, lig1_seq, lig2_seq, base_output_dir, run_name, num_seeds
     )
 
     log_path = os.path.join(actual_output_dir, "colabfold.log")
     log_file = open(log_path, "w")
     process = subprocess.Popen(
-        cmd_str, shell=True, env=env, stdout=log_file, stderr=subprocess.STDOUT
+        cmd, shell=False, env=env, stdout=log_file, stderr=subprocess.STDOUT
     )
     return process, actual_output_dir, log_file
 
@@ -149,17 +149,22 @@ def calculate_interface_distance(
     lig_coords = np.array(lig_atoms)
 
     # Calculate pairwise distances
-    # shape of target_coords is (N, 3), lig_coords is (M, 3)
-    diff = target_coords[:, np.newaxis, :] - lig_coords[np.newaxis, :, :]
-    distances = np.linalg.norm(diff, axis=2)
+    distances = cdist(target_coords, lig_coords)
 
-    # Flatten and sort the distances
+    # Flatten the distances
     flat_distances = distances.flatten()
-    flat_distances.sort()
 
     # Take the average of the top_n shortest distances
     n_to_take = min(top_n, len(flat_distances))
-    return float(np.mean(flat_distances[:n_to_take]))
+    if n_to_take == 0:
+        return float("inf")
+        
+    if n_to_take < len(flat_distances):
+        top_distances = np.partition(flat_distances, n_to_take - 1)[:n_to_take]
+    else:
+        top_distances = flat_distances
+        
+    return float(np.mean(top_distances))
 
 
 def analyze_binding(
