@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 from scipy.spatial.distance import cdist
 from Bio.PDB import PDBParser
+from Bio.PDB.Polypeptide import PPBuilder
 
 
 def _setup_colabfold_run(
@@ -168,7 +169,7 @@ def calculate_interface_distance(
 
 
 def analyze_binding(
-    pdb_path: str, target_residues: list[int], distance_threshold: float = 10.0
+    pdb_path: str, target_residues: list[int], lig1_seq: str, lig2_seq: str, distance_threshold: float = 10.0
 ) -> dict:
     """
     Parses a PDB file and determines which ligands are bound based on interface heavy-atom distance.
@@ -179,8 +180,26 @@ def analyze_binding(
     b_factors = [atom.get_bfactor() for atom in structure.get_atoms()]
     mean_plddt = float(np.mean(b_factors)) if b_factors else 0.0
 
-    dist_lig1 = calculate_interface_distance(structure, target_residues, "B")
-    dist_lig2 = calculate_interface_distance(structure, target_residues, "C")
+    ppb = PPBuilder()
+    model = structure[0]
+    
+    chain_lig1 = "B"
+    chain_lig2 = "C"
+    
+    for chain in model:
+        chain_id = chain.get_id()
+        if chain_id == "A":
+            continue
+        peptides = ppb.build_peptides(chain)
+        if peptides:
+            seq = str(peptides[0].get_sequence())
+            if seq == lig1_seq:
+                chain_lig1 = chain_id
+            elif seq == lig2_seq:
+                chain_lig2 = chain_id
+
+    dist_lig1 = calculate_interface_distance(structure, target_residues, chain_lig1)
+    dist_lig2 = calculate_interface_distance(structure, target_residues, chain_lig2)
 
     return {
         "pdb_file": os.path.basename(pdb_path),
@@ -189,11 +208,13 @@ def analyze_binding(
         "lig1_bound": dist_lig1 < distance_threshold,
         "lig2_bound": dist_lig2 < distance_threshold,
         "mean_plddt": mean_plddt,
+        "chain_lig1": chain_lig1,
+        "chain_lig2": chain_lig2,
     }
 
 
 def process_ensemble(
-    output_dir: str, target_residues: list[int], distance_threshold: float = 10.0
+    output_dir: str, target_residues: list[int], lig1_seq: str, lig2_seq: str, distance_threshold: float = 10.0
 ) -> list[dict]:
     """
     Analyzes an ensemble of PDB files in a directory.
@@ -202,7 +223,7 @@ def process_ensemble(
     pdb_files = list(Path(output_dir).glob("*.pdb"))
 
     for pdb in pdb_files:
-        result = analyze_binding(str(pdb), target_residues, distance_threshold)
+        result = analyze_binding(str(pdb), target_residues, lig1_seq, lig2_seq, distance_threshold)
         results.append(result)
 
     return results

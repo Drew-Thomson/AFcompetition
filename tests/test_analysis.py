@@ -26,7 +26,7 @@ def mock_pdb_file(tmp_path):
 
 def test_analyze_binding(mock_pdb_file):
     target_residues = [1]
-    result = analyze_binding(mock_pdb_file, target_residues, distance_threshold=10.0)
+    result = analyze_binding(mock_pdb_file, target_residues, "G", "G", distance_threshold=10.0)
 
     assert result["lig1_bound"] is True
     assert result["lig2_bound"] is False
