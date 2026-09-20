@@ -5,8 +5,8 @@
 ![pytest](https://img.shields.io/badge/pytest-passing-success.svg)
 ![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
 
-[![Open In Colab (Screen)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Drew-Thomson/AFcompetition/blob/main/AF_Competition_Screen.ipynb)
-[![Open In Colab (Tournament)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Drew-Thomson/AFcompetition/blob/main/AF_Competition_Tournament.ipynb)
+[![Run Single Competition](https://img.shields.io/badge/Colab-Run_Single_Competition-F9AB00?logo=googlecolab&logoColor=white)](https://colab.research.google.com/github/Drew-Thomson/AFcompetition/blob/main/AF_Competition_Screen.ipynb)
+[![Run a Competition Tournament](https://img.shields.io/badge/Colab-Run_a_Competition_Tournament-F9AB00?logo=googlecolab&logoColor=white)](https://colab.research.google.com/github/Drew-Thomson/AFcompetition/blob/main/AF_Competition_Tournament.ipynb)
 
 AlphaFold Ensemble Competition Screen.
 
@@ -17,8 +17,8 @@ Automated pipeline for the methodology described in:
 
 ### Running in Google Colab (Recommended)
 No local setup is required. 
-1. Click one of the "Open in Colab" badges above.
-2. **Important:** Ensure you are using a GPU runtime (`Runtime` -> `Change runtime type` -> select `T4 GPU` or better).
+1. Click one of the "Run in Colab" badges above depending on your desired workflow.
+2. **Important:** Verify that Colab has assigned a GPU runtime **before** running any cells (`Runtime` -> `Change runtime type` -> select `T4 GPU` or better). Changing the runtime later will reset your environment and require you to re-run the setup.
 3. Run the first setup cell in the notebook, which will automatically install ColabFold and its dependencies.
 
 ### Running Locally
