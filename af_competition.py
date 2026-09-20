@@ -15,6 +15,7 @@ def _setup_colabfold_run(
     base_output_dir: str,
     run_name: str,
     num_seeds: int,
+    num_recycles: int = 20,
 ):
     actual_output_dir = os.path.join(base_output_dir, run_name)
     counter = 1
@@ -42,7 +43,7 @@ def _setup_colabfold_run(
         "1",
         "--use-dropout",
         "--num-recycle",
-        "20",
+        str(num_recycles),
     ]
     env = os.environ.copy()
     env.pop("MPLBACKEND", None)
@@ -57,9 +58,10 @@ def run_colabfold(
     base_output_dir: str,
     run_name: str = "competition",
     num_seeds: int = 20,
+    num_recycles: int = 20,
 ) -> str:
     cmd, actual_output_dir, env = _setup_colabfold_run(
-        target_seq, lig1_seq, lig2_seq, base_output_dir, run_name, num_seeds
+        target_seq, lig1_seq, lig2_seq, base_output_dir, run_name, num_seeds, num_recycles
     )
 
     log_path = os.path.join(actual_output_dir, "colabfold.log")
@@ -87,9 +89,10 @@ def run_colabfold_async(
     base_output_dir: str,
     run_name: str = "competition",
     num_seeds: int = 20,
+    num_recycles: int = 20,
 ):
     cmd, actual_output_dir, env = _setup_colabfold_run(
-        target_seq, lig1_seq, lig2_seq, base_output_dir, run_name, num_seeds
+        target_seq, lig1_seq, lig2_seq, base_output_dir, run_name, num_seeds, num_recycles
     )
 
     log_path = os.path.join(actual_output_dir, "colabfold.log")
