@@ -5,6 +5,9 @@
 ![pytest](https://img.shields.io/badge/pytest-passing-success.svg)
 ![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
 
+[![Open In Colab (Screen)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Drew-Thomson/AFcompetition/blob/main/AF_Competition_Screen.ipynb)
+[![Open In Colab (Tournament)](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Drew-Thomson/AFcompetition/blob/main/AF_Competition_Tournament.ipynb)
+
 AlphaFold Ensemble Competition Screen.
 
 Automated pipeline for the methodology described in:
@@ -12,6 +15,13 @@ Automated pipeline for the methodology described in:
 
 ## Prerequisites
 
+### Running in Google Colab (Recommended)
+No local setup is required. 
+1. Click one of the "Open in Colab" badges above.
+2. **Important:** Ensure you are using a GPU runtime (`Runtime` -> `Change runtime type` -> select `T4 GPU` or better).
+3. Run the first setup cell in the notebook, which will automatically install ColabFold and its dependencies.
+
+### Running Locally
 * `colabfold_batch` must be installed and accessible via the system path.
 * Python dependencies are listed in `requirements.txt`. Install via:
   ```bash
@@ -24,6 +34,8 @@ Execution is managed via two Jupyter Notebooks depending on your needs:
 
 1. **`AF_Competition_Screen.ipynb`**: For a direct, single pairwise competition between two ligands.
 2. **`AF_Competition_Tournament.ipynb`**: For screening a list of candidates in a "Winner Stays On" (King of the Hill) tournament to find the strongest binder.
+
+**Note:** Both notebooks come pre-configured with a default example targeting MDM2 against p53 and PMI-derived peptide mutants. You can optionally mount your Google Drive within the notebooks for persistent storage of your generated structures and results.
 
 User-configurable parameters include:
 * `TARGET_SEQ`, `LIGAND_1_SEQ`, `LIGAND_2_SEQ` (or `BINDER_CANDIDATES` list): Amino acid sequences.
