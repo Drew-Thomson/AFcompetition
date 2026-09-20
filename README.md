@@ -47,7 +47,7 @@ User-configurable parameters include:
 ## Pipeline Operations
 
 1. **Generation**: Runs `colabfold_batch` to generate model ensembles in isolated subdirectories.
-2. **Analysis**: Filters generated models by `MIN_PLDDT`. Optimizes a CA-CA distance threshold (5.0 Å to 15.0 Å) to maximize discrimination of singly bound states. 
+2. **Analysis**: Filters generated models by `MIN_PLDDT`. Optimizes an interface heavy-atom distance threshold (2.0 Å to 8.0 Å) to maximize discrimination of singly bound states. 
 3. **Visualization**: Tallies binding states, lists output files for each state, and renders the highest-confidence winning structure inline using `py3Dmol`.
 
 ## Development & Testing
